@@ -1,0 +1,21 @@
+{
+  "assets/img/Logo-Dev.png": {
+    "file": "assets/Logo-Dev-822b023b.png",
+    "src": "assets/img/Logo-Dev.png"
+  },
+  "index.css": {
+    "file": "assets/index-0be8a023.css",
+    "src": "index.css"
+  },
+  "index.html": {
+    "assets": [
+      "assets/Logo-Dev-822b023b.png"
+    ],
+    "css": [
+      "assets/index-0be8a023.css"
+    ],
+    "file": "assets/index-dcbd0f48.js",
+    "isEntry": true,
+    "src": "index.html"
+  }
+}
