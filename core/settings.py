@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import environ
+import dj_database_url
 from datetime import timedelta
 
 env = environ.Env()
@@ -20,6 +21,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = 'RENDER' not in os.environ
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS_DEV')
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 # Application definition
@@ -74,8 +78,9 @@ CKEDITOR_CONFIGS = {
 CKEDITOR_UPLOAD_PATH = "/media/"
 
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -109,10 +114,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        # Feel free to alter this value to suit your needs.
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
 }
 
 
@@ -163,11 +169,19 @@ INTERNAL_IPS = ['127.0.0.1']
 # Vite App Dir: point it to the folder your vite app is in.
 VITE_APP_DIR = os.path.join(BASE_DIR, "src")
 
-STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    os.path.join(VITE_APP_DIR, "dist"),
-]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+STATIC_URL = '/static/'
+
+# Following settings only make sense on production and may break development environments.
+if not DEBUG:
+    # Tell Django to copy statics to the `staticfiles` directory
+    # in your application directory on Render.
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+    # Turn on WhiteNoise storage backend that takes care of compressing static files
+    # and creating unique names for each version so they can safely be cached forever.
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
